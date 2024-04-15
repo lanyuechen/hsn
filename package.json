@@ -1,0 +1,29 @@
+{
+  "name": "hsn",
+  "version": "1.0.0",
+  "description": "短信测试",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "pkg -t node16-macos-x64 -o bin/hsn src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lanyuechen/hsn.git"
+  },
+  "author": "lanyuechen",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/lanyuechen/hsn/issues"
+  },
+  "homepage": "https://github.com/lanyuechen/hsn#readme",
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "inquirer": "^9.2.18",
+    "progress": "^2.0.3"
+  }
+}
