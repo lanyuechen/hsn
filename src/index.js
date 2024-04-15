@@ -2,30 +2,28 @@
 
 import axios from 'axios';
 import ProgressBar from 'progress';
-import { multiRequest } from './utils/utils.js';
+import { multiRequest, sleep } from './utils/utils.js';
 import inquirer from './utils/inquirer.js';
-import Logger from './utils/logger.js';
-import data from './api.json' assert { type: "json" };
+import storage from './utils/storage.js';
+import data from './api.data.js';
 
 axios.defaults.timeout = 5000;
 
-const writeLog = (bar, logs, tailLine) => {
-  for (let i = 0; i < logs.length; i++) {
-    for (let j = i; j < logs.length; j++) {
-      console.log('\r');
-    }
-    console.log(logs[i]);
-  }
-  bar.tick();
+const parseRequestData = (str, mobile) => {
+  return str.replace(/\[phone\]/g, mobile).replace(/\[timestamp\]/g, Date.now())
 }
 
 const run = async () => {
   console.log('开始');
   const mobile = await inquirer.input('请输入手机号');
 
-  const tasks = data.map((url) => async () => {
-    url = url.replace(/\[phone\]/g, mobile);
-    return axios.get(url);
+  const tasks = data.map((d) => async () => {
+    if (typeof d === 'string') {
+      const url = parseRequestData(d, mobile);
+      return axios.get(url);
+    }
+    const config = JSON.parse(parseRequestData(JSON.stringify(d), mobile))
+    return axios(config);
   });
 
   const bar = new ProgressBar('[:bar] :current/:total :elapseds', {
@@ -33,22 +31,35 @@ const run = async () => {
     width: 20,
   });
 
-  let latestLogs = [];
+  let count = 0;
 
-  // const logger = new Logger(bar, 6);
+  while(true) {
+    count += 1;
+    bar.update(0);
 
-  await multiRequest(tasks, 6, ({ finish, total, index, success, message }) => {
-    const url = data[index];
-    latestLogs = [...latestLogs, { url, finish, total, index, success, message }].slice(-6);
+    let result = {
+      total: data.length,
+      success: 0,
+      fail: 0,
+    };
 
-    // bar.tick()
-    // logger.log(`${url.substring(0, 32)}...`)
-    console.log(
-      `${url.substring(0, 32)}...`,
-      success ? '[success]' : '[fail]',
-      message || '',
-    );
-  });
+    await multiRequest(tasks, 6, ({ success, message }) => {
+      result[success ? 'success' : 'fail'] += 1; 
+  
+      bar.tick();
+      // logger.log(`${url.substring(0, 32)}...`)
+      // console.log(
+      //   `[${`000${count}`.slice(-4)}]`,
+      //   `${url.substring(0, 32)}...`,
+      //   success ? '[success]' : '[fail]',
+      //   message || '',
+      // );
+    });
+
+    console.log(`第${count}轮，total: ${result.total}，success: ${result.success}`);
+
+    await sleep(5000);
+  }
 }
 
 run();

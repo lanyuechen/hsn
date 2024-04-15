@@ -7,7 +7,7 @@ const getItem = (key) => {
     const str = fs.readFileSync(CONFIG_PATH, { encoding: 'utf-8' });
     const config = JSON.parse(str);
     return config[key];
-  } catch(err) {
+  } catch (err) {
     return;
   }
 }
@@ -19,11 +19,15 @@ const setItem = (key, value) => {
     const str = fs.readFileSync(CONFIG_PATH, { encoding: 'utf-8' });
     config = JSON.parse(str || '{}');
     config[key] = value;
-  } catch(err) {
+  } catch (err) {
     config = { [key]: value };
   }
 
   fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, undefined, 2));
 }
 
-export default { getItem, setItem };
+const write = (path, data) => {
+  fs.writeFileSync(path, JSON.stringify(data, undefined, 2));
+}
+
+export default { getItem, setItem, write };

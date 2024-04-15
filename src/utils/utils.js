@@ -49,3 +49,11 @@ export function multiRequest(tasks, limit = 6, cb = () => { }) {
 
   return promise;
 }
+
+export function sleep(idle = 1000) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, idle);
+  });
+}
